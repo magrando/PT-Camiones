@@ -1,16 +1,28 @@
 /**********************************************************************************************************************/
 
-create table if not exists USUARIO (
+create table if not exists usuario (
 
 usu_email varchar (50) not null,
 usu_tipo integer not null,
 usu_contraseña varchar (20) not null,
 usu_vigente boolean default true,
 emp_rut varchar (10) default null,
+usu_rut varchar (10) default null,
+usu_nombres varchar (200) not null,
+usu_apell_paterno varchar (100) not null,
+usu_apell_materno varchar (100) not null,
+rol_codigo integer not null,
 constraint pk_usuario PRIMARY KEY (usu_email)
 );
 
-create table if not exists SERVICIO (
+create table if not exists rol (
+
+rol_codigo integer not null auto_increment,
+rol_nombre varchar (50) not null,
+constraint pk_rol PRIMARY KEY (rol_codigo)
+)
+
+create table if not exists servicio (
 
 ser_codigo integer not null auto_increment,
 ser_nombre varchar (50) not null,
@@ -18,7 +30,7 @@ ser_descripcion varchar (1000) default null,
 constraint pk_servicio PRIMARY KEY (ser_codigo)
 );
 
-create table if not exists EMPRESA_PYME (
+create table if not exists empresa_pyme (
 
 emp_rut varchar (10) not null,
 emp_nombre varchar (100) not null,
@@ -40,7 +52,7 @@ serv_vigente boolean default true,
 constraint pk_contrata PRIMARY KEY (emp_rut, ser_codigo)
 );
 
-create table if not exists INFORME (
+create table if not exists informe (
 
 inf_codigo integer not null auto_increment,
 emp_rut varchar (10) not null,
@@ -51,7 +63,7 @@ inf_observaciones varchar (1000) not null,
 constraint pk_informe PRIMARY KEY (inf_codigo)
 );
 
-create table if not exists VEHICULO (
+create table if not exists vehiculo (
 
 veh_patente varchar (7) not null,
 emp_rut varchar (10) not null,
@@ -74,7 +86,7 @@ veh_gps_cod integer default null,
 constraint pk_vehiculo PRIMARY KEY (veh_patente)
 );
 
-create table if not exists CARRO (
+create table if not exists carro (
 
 car_patente varchar (7) not null,
 emp_rut varchar (10) not null,
@@ -88,7 +100,7 @@ car_imagen varchar (200) default null,
 constraint pk_carro PRIMARY KEY (car_patente)
 );
 
-create table if not exists NEUMATICO (
+create table if not exists neumatico (
 
 neu_serie varchar (20) not null,
 emp_rut varchar (10) not null,
@@ -104,7 +116,7 @@ neu_imagen varchar (200) default null,
 constraint pk_neumatico PRIMARY KEY (neu_serie)
 );
 
-create table if not exists CHOFER (
+create table if not exists chofer (
 
 cho_rut varchar (10) not null,
 cho_num_licencia varchar (10) not null,
@@ -122,7 +134,7 @@ constraint pk_chofer PRIMARY KEY (cho_rut)
 );
 
 
-create table if not exists COMISION (
+create table if not exists comision (
 
 com_codigo integer not null auto_increment,
 com_porcentaje integer not null,
@@ -181,7 +193,7 @@ constraint pk_uni_veh_cho PRIMARY KEY (veh_patente, cho_rut)
 );
 
 
-create table if not exists PROVEEDOR (
+create table if not exists proveedor (
 
 pro_rut varchar (10) not null,
 emp_rut varchar (10) not null,
@@ -194,7 +206,7 @@ pro_observaciones varchar (1000) default null,
 constraint pk_proveedor PRIMARY KEY (pro_rut)
 );
 
-create table if not exists CARGA_COMBUSTIBLE (
+create table if not exists carga_combustible (
 
 ccm_codigo integer not null auto_increment,
 ccm_contador integer not null,
@@ -210,7 +222,7 @@ ccm_observaciones varchar (1000) default null,
 constraint pk_carga_combustible PRIMARY KEY (ccm_codigo)
 );
 
-create table if not exists MANTENCION (
+create table if not exists mantencion (
 
 man_codigo integer not null auto_increment,
 man_contador integer not null,
@@ -224,7 +236,7 @@ man_observacion varchar (1000) not null,
 constraint pk_mantencion PRIMARY KEY (man_codigo)
 );
 
-create table if not exists INFORME_GPS (
+create table if not exists informe_gps (
 
 infgps_codigo integer not null auto_increment,
 veh_patente varchar (7) not null,
@@ -234,7 +246,7 @@ infgps_descripcion varchar (1000) not null,
 constraint pk_informe_gps PRIMARY KEY (infgps_codigo)
 );
 
-create table if not exists CLIENTE (
+create table if not exists cliente (
 
 cli_rut varchar (10) not null,
 emp_rut varchar (10) not null,
@@ -248,7 +260,7 @@ cli_observacion varchar (1000) default null,
 constraint pk_cliente PRIMARY KEY (cli_rut)
 );
 
-create table if not exists PROGRAMA_VIAJE (
+create table if not exists programa_viaje (
 
 prv_codigo integer not null auto_increment,
 prv_contador integer not null,
@@ -262,7 +274,7 @@ prv_observaciones varchar (1000) default null,
 constraint pk_programa_viaje PRIMARY KEY (prv_codigo)
 );
 
-create table if not exists RUTA (
+create table if not exists ruta (
 
 rta_codigo integer not null auto_increment,
 emp_rut varchar (10) not null,
@@ -275,7 +287,7 @@ rta_observaciones varchar (1000) default null,
 constraint pk_ruta PRIMARY KEY (rta_codigo)
 );
 
-create table if not exists VIAJE_EFECTUADO (
+create table if not exists viaje_efectuado (
 
 vef_codigo integer not null auto_increment,
 vef_contador integer not null,
@@ -294,7 +306,7 @@ vef_observaciones varchar (1000) not null,
 constraint pk_viaje_efectuado PRIMARY KEY (vef_codigo)
 );
 
-create table if not exists GUIA_DE_DESPACHO (
+create table if not exists guia_de_despacho (
 
 guia_codigo integer not null auto_increment,
 guia_numero integer not null,
@@ -304,7 +316,7 @@ vef_codigo integer not null,
 constraint pk_guia_de_despacho PRIMARY KEY (guia_codigo)
 );
 
-create table if not exists EVENTO_VIAJE (
+create table if not exists evento_viaje (
 
 eve_codigo integer not null auto_increment,
 vef_codigo integer not null,
@@ -317,73 +329,75 @@ constraint pk_evento_viaje PRIMARY KEY (eve_codigo)
 
 /******************************************************************************************************************/
 
-alter table USUARIO add constraint fk_empresa_usuario FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table usuario add constraint fk_empresa_usuario FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table emp_contrata_serv add constraint fk_empresa_contrata FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table usuario add constraint fk_rol_usuario FOREIGN KEY (rol_codigo) REFERENCES rol (rol_codigo);
+ 
+alter table emp_contrata_serv add constraint fk_empresa_contrata FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table emp_contrata_serv add constraint fk_servicio_contrata FOREIGN KEY (ser_codigo) REFERENCES SERVICIO (ser_codigo);
+alter table emp_contrata_serv add constraint fk_servicio_contrata FOREIGN KEY (ser_codigo) REFERENCES servicio (ser_codigo);
 
-alter table INFORME add constraint fk_empresa_informe FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table informe add constraint fk_empresa_informe FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table VEHICULO add constraint fk_empresa_vehiculo FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table vehiculo add constraint fk_empresa_vehiculo FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table CARRO add constraint fk_empresa_carro FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table carro add constraint fk_empresa_carro FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table NEUMATICO add constraint fk_empresa_neumatico FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table neumatico add constraint fk_empresa_neumatico FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table uni_veh_car add constraint fk_carro_union_vehiculo FOREIGN KEY (car_patente) REFERENCES CARRO (car_patente);
+alter table uni_veh_car add constraint fk_carro_union_vehiculo FOREIGN KEY (car_patente) REFERENCES carro (car_patente);
 
-alter table uni_veh_car add constraint fk_vehiculo_union_carro FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table uni_veh_car add constraint fk_vehiculo_union_carro FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table uni_veh_neu add constraint fk_neumatico_union_vehiculo FOREIGN KEY (neu_serie) REFERENCES NEUMATICO (neu_serie);
+alter table uni_veh_neu add constraint fk_neumatico_union_vehiculo FOREIGN KEY (neu_serie) REFERENCES neumatico (neu_serie);
 
-alter table uni_veh_neu add constraint fk_vehiculo_union_neumatico FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table uni_veh_neu add constraint fk_vehiculo_union_neumatico FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table uni_veh_cho add constraint fk_chofer_union_vehiculo FOREIGN KEY (cho_rut) REFERENCES CHOFER (cho_rut);
+alter table uni_veh_cho add constraint fk_chofer_union_vehiculo FOREIGN KEY (cho_rut) REFERENCES chofer (cho_rut);
 
-alter table uni_veh_cho add constraint fk_vehiculo_union_chofer FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table uni_veh_cho add constraint fk_vehiculo_union_chofer FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table emp_contrata_cho add constraint fk_empresa_contrata_chof FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table emp_contrata_cho add constraint fk_empresa_contrata_chof FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table emp_contrata_cho add constraint fk_chofer_contratado FOREIGN KEY (cho_rut) REFERENCES CHOFER (cho_rut);
+alter table emp_contrata_cho add constraint fk_chofer_contratado FOREIGN KEY (cho_rut) REFERENCES chofer (cho_rut);
 
-alter table PROVEEDOR add constraint fk_empresa_proveedor FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table proveedor add constraint fk_empresa_proveedor FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table CARGA_COMBUSTIBLE add constraint fk_proveedor_comb FOREIGN KEY (pro_rut) REFERENCES PROVEEDOR (pro_rut);
+alter table carga_combustible add constraint fk_proveedor_comb FOREIGN KEY (pro_rut) REFERENCES proveedor (pro_rut);
 
-alter table CARGA_COMBUSTIBLE add constraint fk_vehiculo_comb FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table carga_combustible add constraint fk_vehiculo_comb FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table MANTENCION add constraint fk_proveedor_mant FOREIGN KEY (pro_rut) REFERENCES PROVEEDOR (pro_rut);
+alter table mantencion add constraint fk_proveedor_mant FOREIGN KEY (pro_rut) REFERENCES proveedor (pro_rut);
 
-alter table MANTENCION add constraint fk_vehiculo_mant FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table mantencion add constraint fk_vehiculo_mant FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table INFORME_GPS add constraint fk_vehiculo_gps FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table informe_gps add constraint fk_vehiculo_gps FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table chof_comision add constraint fk_chofer_com FOREIGN KEY (cho_rut) REFERENCES CHOFER (cho_rut);
+alter table chof_comision add constraint fk_chofer_com FOREIGN KEY (cho_rut) REFERENCES chofer (cho_rut);
 
-alter table chof_comision add constraint fk_comision_com FOREIGN KEY (com_codigo) REFERENCES COMISION (com_codigo);
+alter table chof_comision add constraint fk_comision_com FOREIGN KEY (com_codigo) REFERENCES comision (com_codigo);
 
-alter table CLIENTE add constraint fk_empresa_cliente FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table cliente add constraint fk_empresa_cliente FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table PROGRAMA_VIAJE add constraint fk_empresa_programa FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table programa_viaje add constraint fk_empresa_programa FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table PROGRAMA_VIAJE add constraint fk_cliente_programa FOREIGN KEY (cli_rut) REFERENCES CLIENTE (cli_rut);
+alter table programa_viaje add constraint fk_cliente_programa FOREIGN KEY (cli_rut) REFERENCES cliente (cli_rut);
 
-alter table PROGRAMA_VIAJE add constraint fk_ruta_programa FOREIGN KEY (rta_codigo) REFERENCES RUTA (rta_codigo);
+alter table programa_viaje add constraint fk_ruta_programa FOREIGN KEY (rta_codigo) REFERENCES ruta (rta_codigo);
 
-alter table RUTA add constraint fk_enpresa_ruta FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table ruta add constraint fk_enpresa_ruta FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table VIAJE_EFECTUADO add constraint fk_empresa_viaje FOREIGN KEY (emp_rut) REFERENCES EMPRESA_PYME (emp_rut);
+alter table viaje_efectuado add constraint fk_empresa_viaje FOREIGN KEY (emp_rut) REFERENCES empresa_pyme (emp_rut);
 
-alter table VIAJE_EFECTUADO add constraint fk_vehiculo_viaje FOREIGN KEY (veh_patente) REFERENCES VEHICULO (veh_patente);
+alter table viaje_efectuado add constraint fk_vehiculo_viaje FOREIGN KEY (veh_patente) REFERENCES vehiculo (veh_patente);
 
-alter table VIAJE_EFECTUADO add constraint fk_ruta_viaje FOREIGN KEY (rta_codigo) REFERENCES RUTA (rta_codigo);
+alter table viaje_efectuado add constraint fk_ruta_viaje FOREIGN KEY (rta_codigo) REFERENCES ruta (rta_codigo);
 
-alter table EVENTO_VIAJE add constraint fk_viaje_evento FOREIGN KEY (vef_codigo) REFERENCES VIAJE_EFECTUADO (vef_codigo);
+alter table evento_viaje add constraint fk_viaje_evento FOREIGN KEY (vef_codigo) REFERENCES viaje_efectuado (vef_codigo);
 
-alter table GUIA_DE_DESPACHO add constraint fk_cliente_guia FOREIGN KEY (cli_rut) REFERENCES CLIENTE (cli_rut);
+alter table guia_de_despacho add constraint fk_cliente_guia FOREIGN KEY (cli_rut) REFERENCES cliente (cli_rut);
 
-alter table GUIA_DE_DESPACHO add constraint fk_viaje_guia FOREIGN KEY (vef_codigo) REFERENCES VIAJE_EFECTUADO (vef_codigo); 
+alter table guia_de_despacho add constraint fk_viaje_guia FOREIGN KEY (vef_codigo) REFERENCES viaje_efectuado (vef_codigo); 
 
 
 
